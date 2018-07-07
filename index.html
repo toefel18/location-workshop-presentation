@@ -48,25 +48,224 @@
             <h2 style="color: dodgerblue">Overview</h2>
             <ol>
                 <li>Docker concepts</li>
-                <li>Build our your own image</li>
-                <li>Running containers</li>
+                <li>Building and running our your own image</li>
                 <li>Dinner</li>
-                <li>Development process</li>
-                <ul>
-                    <li>Pipelines</li>
-                    <li>Deployment</li>
-                </ul>
+                <li>Impact om development process</li>
+                <li>Ansible (configuration management)</li>
                 <li>Container platforms</li>
             </ol>
         </section>
 
         <section>
+            <section>
+                <h2 style="color: dodgerblue">Images</h2>
+                An image is an inactive, immutable, file that's essentially a snapshot of a container.
+                <br/><br/>
+                Images are created with the <code data-trim data-noescape style="color:orange; background-color: gray">docker
+                build</code> command, and they'll produce a container when started
+                with <code data-trim data-noescape style="color:orange; background-color: gray">docker run</code>.
+                Images are stored in a Docker registry such as <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Images Commands</h2>
+                <pre class="fragment fade-in bash"><code data-trim data-noescape>
+                    # list the images on your system
+                    docker images
+                </code></pre>
+                <pre class="fragment fade-up bash"><code data-trim data-noescape>
+                    # download mysql:latest from the <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
+                    docker pull mysql
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # download mysql version 5.5 from the <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
+                    docker pull mysql:5.5
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # give an alias to the image
+                    docker tag mysql:5.5 cgi/redis:1.0
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # remove the image
+                    docker image rm mysql:5.5
+                    docker image rm cgi/redis:1.0
+                </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 style="color: dodgerblue">Containers</h2>
+                A running instance of docker images
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">Running a container</h2>
+                <pre class="fragment fade-in bash"><code data-trim data-noescape>
+                    # running a redis container as a daemon (background process)
+                    docker run --name my-redis -d redis
+                </code></pre>
+                <pre class="fragment fade-up bash"><code data-trim data-noescape>
+                    # view the running container
+                    docker ps
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # stop and start the container
+                    docker stop [container-id | container-name]
+                    docker ps -a
+                    docker start [container-id | container-name]
+                </code></pre>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Connect to the container</h2>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # get the IP address of the docker0 network interface
+                    ip address show docker0
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # install the redis command line client
+                    sudo apt install redis-tools
+                    # connect and set a key
+                    redis-cli -h [ip address of docker-host] -p 6379
+                    set a b
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # or run a docker-container in interactive mode to connect
+                    docker run --rm -it redis redis-cli -h [ip address]
+                    get a  #should return b
+                </code></pre>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Port forwarding</h2>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # kill the current redis container
+                    docker rm -f my-redis
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # install the redis command line client
+                    docker run --name my-redis -d -p 6379:6379 redis
+                    # connect and set a key
+                    redis-cli -h localhost -p 6379
+                    set a b
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # DOES NOT WORK (localhost is local to the container!):
+                    docker run --rm -it redis redis-cli -h localhost
+                </code></pre>
+                <pre class="fragment fade-down bash"><code data-trim data-noescape>
+                    # use the host IP address:
+                    ip address
+                    docker run --rm -it redis redis-cli -h [host-ip]
+                    get a  #should return b
+                </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 style="color: dodgerblue">Building your own image</h2>
+                <p>Images are described in a file named Dockerfile.</p>
+                <p>Docker build takes a Dockerfile and a directory to build an image.</p>
+                <p>See the <a href="https://docs.docker.com/engine/reference/builder/"  target="_blank">Dockerfile reference</a>
+                for all the options</p>
+
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">A simple app</h2>
+                type these commands, do not copy
+                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                    mkdir /tmp/app
+                    cd /tmp/app
+
+                    cat > my-app.sh
+                    echo "hi fella $1"
+
+                    to save, hit: CTRL + D
+                    chmod +x my-app.sh
+                    test it with:
+                    ./my-app.sh
+                    ./my-app.sh docker
+                </code></pre>
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">Dockerfile</h2>
+                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                    cd /tmp/app
+                    vim Dockerfile
+                </code></pre>
+                <pre class="fragment dockerfile"><code data-trim data-noescape>
+                    # extend the bash image
+                    FROM bash
+
+                    # copy the my-app.sh inside the image to path /var/my-app.sh
+                    ADD my-app.sh /var/my-app.sh
+
+                    # the bash process start our script
+                    ENTRYPOINT ["bash", "/var/my-app.sh"]
+
+                    # this are the default arguments passed to our script
+                    # they can be overridden using docker run
+                    CMD ["docker"]
+                </code></pre>
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">Build the dockerfile</h2>
+                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                    cd /tmp/app
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    docker build -t my-app .
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    docker images
+                    REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
+                    my-app        latest    dad8c3e50f82   5 seconds ago  12.3MB
+
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    docker run --rm -it my-app
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # now override the CMD section
+                    docker run --rm -it my-app dev-community
+                </code></pre>
+            </section>
+
+
+            <section>
+                <h2 style="color: dodgerblue">Mapping an external directory inside</h2>
+
+                <p>Mapping a directory from the host inside the container can be done
+                    with a volume.Let's use the <a href="https://hub.docker.com/_/nginx/" target="_blank">nginx webserver image</a></p>
+
+                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                    # lets create a directory with content
+                    mkdir -p /tmp/www  &&  cd /tmp/www
+                    wget https://media.giphy.com/media/8qgPkRRqwkVlC/giphy.gif
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # now serve the /tmp/www content using nginx
+                    docker run -v /tmp/www:/usr/share/nginx/html:ro -p 8080:80 -d nginx
+                </code></pre>
+                <p class="fragment">
+                    now visit http://[ip-address]:8080/giphy.gif
+                </p>
+            </section>
+        </section>
+
+        <section>
+            <img data-src="https://docs.docker.com/engine/images/architecture.svg">
             <a href="https://docs.docker.com/engine/docker-overview/" target="_blank">
-                <img data-src="https://docs.docker.com/engine/images/architecture.svg">
                 source: docker.com
             </a>
         </section>
 
+        <section>
+            <h1>dinner</h1>
+            <img data-src="https://media.giphy.com/media/10xnAw9YM8IYLe/giphy.gif">
+        </section>
     </div>
 </div>
 

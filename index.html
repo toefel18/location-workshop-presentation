@@ -73,7 +73,8 @@
                     docker images
                 </code></pre>
                 <pre class="fragment fade-up bash"><code data-trim data-noescape>
-                    # download mysql:latest from the <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
+                    # download mysql:latest from the <a
+                        href="http://registry.hub.docker.com">registry.hub.docker.com</a>
                     docker pull mysql
                 </code></pre>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
@@ -165,15 +166,16 @@
                 <h2 style="color: dodgerblue">Building your own image</h2>
                 <p>Images are described in a file named Dockerfile.</p>
                 <p>Docker build takes a Dockerfile and a directory to build an image.</p>
-                <p>See the <a href="https://docs.docker.com/engine/reference/builder/"  target="_blank">Dockerfile reference</a>
-                for all the options</p>
+                <p>See the <a href="https://docs.docker.com/engine/reference/builder/" target="_blank">Dockerfile
+                    reference</a>
+                    for all the options</p>
 
             </section>
 
             <section>
                 <h2 style="color: dodgerblue">A simple app</h2>
                 type these commands, do not copy
-                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                <pre class="fragment bash"><code data-trim data-noescape>
                     mkdir /tmp/app
                     cd /tmp/app
 
@@ -190,7 +192,7 @@
 
             <section>
                 <h2 style="color: dodgerblue">Dockerfile</h2>
-                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                <pre class="fragment bash"><code data-trim data-noescape>
                     cd /tmp/app
                     vim Dockerfile
                 </code></pre>
@@ -212,7 +214,7 @@
 
             <section>
                 <h2 style="color: dodgerblue">Build the dockerfile</h2>
-                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                <pre class="fragment bash"><code data-trim data-noescape>
                     cd /tmp/app
                 </code></pre>
                 <pre class="fragment bash"><code data-trim data-noescape>
@@ -233,25 +235,49 @@
                 </code></pre>
             </section>
 
+        </section>
 
+        <section>
             <section>
-                <h2 style="color: dodgerblue">Mapping an external directory inside</h2>
+                <h3 style="color: dodgerblue">Mapping an external directory inside</h3>
 
-                <p>Mapping a directory from the host inside the container can be done
-                    with a volume.Let's use the <a href="https://hub.docker.com/_/nginx/" target="_blank">nginx webserver image</a></p>
+                <p style="font-size: 0.7em;">Mapping a directory from the host inside the container can be done
+                    with a volume. Let's use the <a href="https://hub.docker.com/_/nginx/" target="_blank">
+                    nginx webserver image</a></p>
 
-                <pre class="fragment dockerfile bash"><code data-trim data-noescape>
+                <pre class="fragment bash"><code data-trim data-noescape>
                     # lets create a directory with content
                     mkdir -p /tmp/www  &&  cd /tmp/www
                     wget https://media.giphy.com/media/8qgPkRRqwkVlC/giphy.gif
                 </code></pre>
                 <pre class="fragment bash"><code data-trim data-noescape>
                     # now serve the /tmp/www content using nginx
-                    docker run -v /tmp/www:/usr/share/nginx/html:ro -p 8080:80 -d nginx
+                    docker run --name webserver -v /tmp/www:/usr/share/nginx/html:ro -p 8080:80 -d nginx
                 </code></pre>
                 <p class="fragment">
                     now visit http://[ip-address]:8080/giphy.gif
                 </p>
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">Inspecting a container</h2>
+
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # view the logs
+                    docker logs webserver   # or first part of container-id
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # view the stats of your running containers
+                    docker stats
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # inspect the configuration of a container
+                    docker inspect webserver
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # execute a command in a running container
+                    docker exec -it webserver /bin/bash
+                </code></pre>
             </section>
         </section>
 
@@ -263,8 +289,142 @@
         </section>
 
         <section>
-            <h1>dinner</h1>
+            <h1 style="color: dodgerblue">dinner</h1>
             <img data-src="https://media.giphy.com/media/10xnAw9YM8IYLe/giphy.gif">
+        </section>
+
+        <section>
+            <h2 style="color: dodgerblue">Development process</h2>
+            <p>what does your development process look like?</p>
+        </section>
+
+        <section>
+            <h2 style="color: dodgerblue">Development process @ DHL</h2>
+
+            <div style="text-align: left; float: left; font-size: 0.5em">
+                <ul>
+                    <li class="fragment">SCRUM + Devops</li>
+                    <li class="fragment">Develop features in feature-branches</li>
+                    <li class="fragment">Devs create pull-requests (PR) & request review</li>
+                    <li class="fragment">Automated unit, integration, system, performance tests</li>
+                    <li class="fragment">Automatic + manual E2E tests</li>
+                </ul>
+            </div>
+
+            <div style="text-align: right; float: right; font-size: 0.5em">
+                <ul>
+                    <li class="fragment">CI using Jenkins for all PR's against master</li>
+                    <li class="fragment">Continuous deployment to accept</li>
+                    <li class="fragment">One click deployment to production</li>
+                    <li class="fragment">Roll-forward as much as possible</li>
+                    <li class="fragment">All documentation in markdown.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h3 style="color: dodgerblue">12 FACTOR</h3>
+            See <a href="https://12factor.net/" target="_blank">12factor.net</a>
+        </section>
+
+        <section>
+            <section>
+                <h1 style="color: dodgerblue">Experiences<br />at DHL</h1>
+            </section>
+            <section>
+                <h3 style="color: dodgerblue">Stopped using application servers</h3>
+
+                <ul>
+                    <li>Especially the paid versions (pay more, get less)</li>
+                    <li>Harder to automatically configure</li>
+                    <li>Never got the right support</li>
+                    <li>No benefit if you cluster using docker</li>
+                    <li>Prefer in-mem (app-)servers like Jetty, Tomcat, Undertow JDK HttpServer</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Dropped maven artifact versioning</h3>
+
+                <ul>
+                    <li>All maven builds produce version 1.0.0</li>
+                    <li>Tag image with commit id</li>
+                    <li><b>Your image is the release</b></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Use structured logging</h3>
+
+                <ul>
+                    <li>Each log entry consists of key-value pairs</li>
+                    <li>Outputs JSON (can be text in dev mode)</li>
+                    <li>Can be ingested by tools like ELK/Graylog etc.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Provide a /version endpoint</h3>
+
+                <ul>
+                    <li>Application name</li>
+                    <li>Commit ID</li>
+                    <li style="color:orangered">branch-name</li>
+                    <li>Image build time</li>
+                    <li>Start time</li>
+                    <li>Server time</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Expose metrics (/metrics)</h3>
+
+                <ul>
+                    <li>Helps analyse behavior</li>
+                    <li>Spot anomalies</li>
+                    <li>Opens the door for monitoring & altering</li>
+                    <li>Started with <a href="https://github.com/toefel18/patan" target="_blank">patan</a></li>
+                    <li>Migrating to <a href="https://prometheus.io/">prometheus</a> </li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Memory and CPU limits</h3>
+
+                <pre class="bash"><code data-trim data-noescape>java -Xmx1024m != docker --memory=1024m</code></pre>
+                <p>Configures JVM heap size:</p>
+                <pre class="bash"><code data-trim data-noescape>java -Xmx</code></pre>
+                <p>Configures total memory:</p>
+                <pre class="bash"><code data-trim data-noescape>docker --memory</code></pre>
+
+                <p>As of java 8u131 you can use</p>
+                <pre class="bash"><code data-trim data-noescape>-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap</code></pre>
+
+                <p>see <a href="https://blogs.oracle.com/java-platform-group/java-se-support-for-docker-cpu-and-memory-limits">Java SE support for docker limits</a></p>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">App is responsible for db-migration</h4>
+
+                <ul>
+                    <li>Application migrates database at startup</li>
+                    <li>We use <a href="https://flywaydb.org/">Flyway</a> and <a href="https://github.com/sindicate/solidbase" target="_blank">Solidbase</a></li>
+                    <li>Easy to create yourself, <a href="https://github.com/toefel18/garsson-api/blob/master/garsson/db/migration/migrate.go" target="_blank">example go implementation</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">Version REST API</h4>
+
+                <ul>
+                    <li>URL based: /v1, /2</li>
+                    <li>HTTP Request header based: <pre class="bash"><code data-trim data-noescape>X-Api-Version: 1</code></pre></li>
+                    <li>If header is missing, users get the latest</li>
+                    <li>I prefer URL based, clients know what they get</li>
+                </ul>
+            </section>
+
+
         </section>
     </div>
 </div>

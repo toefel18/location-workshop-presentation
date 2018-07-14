@@ -410,6 +410,7 @@
                     <li>Application migrates database at startup</li>
                     <li>We use <a href="https://flywaydb.org/">Flyway</a> and <a href="https://github.com/sindicate/solidbase" target="_blank">Solidbase</a></li>
                     <li>Easy to create yourself, <a href="https://github.com/toefel18/garsson-api/blob/master/garsson/db/migration/migrate.go" target="_blank">example go implementation</a></li>
+                    <li>Be careful when removing data!</li>
                 </ul>
             </section>
 
@@ -457,6 +458,47 @@
                 <ul>
                     <li>Focus on confidence</li>
                     <li>More integration & system sts</li>
+                </ul>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">Use string as data type over numeric</h4>
+
+                <ul>
+                    <li>Only use numeric types if you need arithmetic</li>
+                    <li>Prefer string in other cases</li>
+                    <li>Example: prefer string for a 'houseNumber' field</li>
+                    <li>Holds for interfaces & database schema</li>
+                </ul>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">Release services independently</h4>
+
+                <ul>
+                    <li>Avoid building a distributed monolith</li>
+                    <li>Apps should support multiple versions of their neighbors</li>
+                </ul>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">Roll forward instead of roll back</h4>
+
+                <ul>
+                    <li>Prefer rolling forward</li>
+                    <li>Fix a problem release and deploy a new version</li>
+                    <li>Rollback only in emergency</li>
+                    <li>Take database migration into account for rollbacks</li>
+                    <li>See next slide: feature toggle</li>
+                </ul>
+            </section>
+
+            <section>
+                <h4 style="color: dodgerblue">Use feature toggles</h4>
+
+                <ul>
+                    <li>Deploy new features as disabled</li>
+                    <li>Manually turn them on by usign a feature-toggle</li>
                 </ul>
             </section>
         </section>

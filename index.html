@@ -119,8 +119,7 @@
             <section>
                 <h2 style="color: dodgerblue">Connect to the container</h2>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
-                    # get the IP address of the docker0 network interface
-                    ip address show docker0
+                    docker inspect [container-id | container-name]
                 </code></pre>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
                     # install the redis command line client
@@ -354,6 +353,15 @@
             </section>
 
             <section>
+                <h4 style="color: dodgerblue">Don't strive for 100% unit test coverage</h4>
+
+                <ul>
+                    <li>Focus on confidence</li>
+                    <li>More integration & system tests</li>
+                </ul>
+            </section>
+
+            <section>
                 <h3 style="color: dodgerblue">Use structured logging</h3>
 
                 <ul>
@@ -419,11 +427,9 @@
 
                 <ul>
                     <li>URL based: /v1, /2</li>
-                    <li>HTTP Request header based: <pre class="bash"><code data-trim data-noescape>X-Api-Version: 1</code></pre></li>
-                    <li>If header is missing, users get the latest</li>
-                    <li>I prefer URL based, clients know what they get</li>
+                    <li>HTTP Request header based</li>
                 </ul>
-            </section>
+            </section><pre class="bash"><code data-trim data-noescape>X-Api-Version: 1</code></pre>
 
             <section>
                 <h4 style="color: dodgerblue">Ignore unknown fields while parsing JSON</h4>
@@ -449,26 +455,6 @@
                 <ul>
                     <li>We rather build our own images and push them to Openshift</li>
                     <li>Then run that image, using only the run platform of Openshift</li>
-                </ul>
-            </section>
-
-            <section>
-                <h4 style="color: dodgerblue">Don't strive for 100% unit test coverage</h4>
-
-                <ul>
-                    <li>Focus on confidence</li>
-                    <li>More integration & system sts</li>
-                </ul>
-            </section>
-
-            <section>
-                <h4 style="color: dodgerblue">Use string as data type over numeric</h4>
-
-                <ul>
-                    <li>Only use numeric types if you need arithmetic</li>
-                    <li>Prefer string in other cases</li>
-                    <li>Example: prefer string for a 'houseNumber' field</li>
-                    <li>Holds for interfaces & database schema</li>
                 </ul>
             </section>
 

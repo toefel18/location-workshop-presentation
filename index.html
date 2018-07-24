@@ -25,10 +25,10 @@
 <div class="reveal">
     <div class="slides">
         <section>
-            <img data-src="https://cdn-images-1.medium.com/max/2000/1*PCfipbEQTl6TLTGppEvUZA.png" alt="Docker">
+            <img data-src="docker.jpeg" alt="Docker">
+            <br/>
             <img data-src="devcgi.png" alt="devcgi">
-            <img src="devcgi.png" alt="devcgi">
-            <p>experiences of running containers in production</p>
+            <p>Experiences of running containers in production</p>
         </section>
 
         <section>
@@ -48,31 +48,109 @@
 
         <section>
             <h2 style="color: dodgerblue">Overview</h2>
+
             <ol>
-                <li>Docker concepts</li>
-                <li>Building and running our your own image</li>
-                <li>Dinner</li>
-                <li>Impact om development process</li>
-                <li>Ansible (configuration management)</li>
-                <li>Container platforms</li>
+                <li>AWS overview + ansible (assignment 1 + 2)</li>
+                <li>Basic docker commands (assignment 3)</li>
+                <li>Food</li>
+                <li>Building images (assignment 4)</li>
+                <li>CI/CD pipeline (assignment 5 + 6)</li>
+                <li>Optional: Container platforms</li>
             </ol>
         </section>
 
         <section>
+            <h2 style="color: dodgerblue">AWS platform overview</h2>
+            <p>Server layout per group</p>
+            <img data-src="platform-overview.png" alt="platform">
+        </section>
+
+        <section>
             <section>
-                <h2 style="color: dodgerblue">Images</h2>
-                An image is an inactive, immutable, file that's essentially a snapshot of a container.
-                <br/><br/>
-                Images are created with the <code data-trim data-noescape style="color:orange; background-color: gray">docker
-                build</code> command, and they'll produce a container when started
-                with <code data-trim data-noescape style="color:orange; background-color: gray">docker run</code>.
-                Images are stored in a Docker registry such as <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
+                <h2 style="color: dodgerblue">Ansible</h2>
+                <ul>
+                    <li>Agent-less configuration management tool</li>
+                    <li>Uses SSH Keys to access remote servers</li>
+                    <li>Installs and configures servers and software</li>
+                    <li>Manages docker container deployments</li>
+                    <li>Inventories describe all the servers it should manage</li>
+                    <li>Scripts are written in YAML, called playbooks</li>
+                </ul>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Ansible Inventory</h2>
+                <pre class="fragment fade-down ini"><code data-trim data-noescape>
+                [docker]
+                172.28.128.4
+
+                [buildserver]
+                172.28.128.6
+
+                [allservers:children]
+                docker
+                buildserver
+                </code></pre>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Ansible Playbook</h2>
+                <pre class="fragment fade-down yaml"><code data-trim data-noescape>
+                ---
+                - hosts: webservers
+                  vars:
+                    http_port: 80
+                    max_clients: 200
+                  remote_user: root
+                  tasks:
+                  - name: ensure apache is at the latest version
+                    yum:
+                      name: httpd
+                      state: latest
+                  - name: write the apache config file
+                    template:
+                      src: /srv/httpd.j2
+                      dest: /etc/httpd.conf
+                    notify:
+                    - restart apache
+                  - name: ensure apache is running
+                    service:
+                      name: httpd
+                      state: started
+                  handlers:
+                    - name: restart apache
+                      service:
+                        name: httpd
+                        state: restarted
+                </code></pre>
+            </section>
+        </section>
+        <section>
+            <h2 style="color: dodgerblue">Demo</h2>
+            <p>To connect to AWS servers, you need SSH keys</p>
+            <p><pre class="fragment fade-in bash"><code data-trim data-noescape>git clone https://github.com/toefel18/location-service-workshop.git</code></pre></p>
+            <p>Or download them at <a href="https://tinyurl.com/cgi-docker-keys", target="_blank">https://tinyurl.com/cgi-docker-keys</a></p>
+            <p>Then start working on Assignment 1 and 2 <a href="https://tinyurl.com/cgi-docker", target="_blank">https://tinyurl.com/cgi-docker</a></p>
+        </section>
+
+        <section>
+            <img data-src="architecture.svg">
+            <a href="https://docs.docker.com/engine/docker-overview/" target="_blank">
+                source: docker.com
+            </a>
+        </section>
+
+        <section>
+            <section>
+                <h2 style="color: dodgerblue">Docker Images</h2>
+                <p>An image is an inert, immutable, file that's essentially a snapshot of a container.</p>
+                <p>Images produce a container when started with <code data-trim data-noescape style="color:orange; background-color: gray">docker run</code></p>
+                <p>Docker hub: <a href="http://registry.hub.docker.com", target="_blank">registry.hub.docker.com</a></p>
             </section>
             <section>
                 <h2 style="color: dodgerblue">Images Commands</h2>
                 <pre class="fragment fade-in bash"><code data-trim data-noescape>
                     # list the images on your system
                     docker images
+                    docker image ls
                 </code></pre>
                 <pre class="fragment fade-up bash"><code data-trim data-noescape>
                     # download mysql:latest from the <a
@@ -82,6 +160,7 @@
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
                     # download mysql version 5.5 from the <a href="http://registry.hub.docker.com">registry.hub.docker.com</a>
                     docker pull mysql:5.5
+                    docker image pull mysql:5.5
                 </code></pre>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
                     # give an alias to the image
@@ -97,10 +176,15 @@
 
         <section>
             <section>
-                <h2 style="color: dodgerblue">Containers</h2>
-                A running instance of docker images
+                <h2 style="color: dodgerblue">Docker containers</h2>
+                <p>A running instance of a docker image</p>
+                <ul>
+                    <li>Isolated environment</li>
+                    <li>Limited CPU, Memory and Network IO (cgroups)</li>
+                    <li>Own network interface</li>
+                    <li>Own filesystem</li>
+                </ul>
             </section>
-
             <section>
                 <h2 style="color: dodgerblue">Running a container</h2>
                 <pre class="fragment fade-in bash"><code data-trim data-noescape>
@@ -117,6 +201,14 @@
                     docker ps -a
                     docker start [container-id | container-name]
                 </code></pre>
+            </section>
+            <section>
+                <h2 style="color: dodgerblue">Containers</h2>
+                <p>Running centos within ubuntu</p>
+                <ul>
+                    <li>Distro's determine tooling and fs layout</li>
+                    <li>Linux kernel is common</li>
+                </ul>
             </section>
             <section>
                 <h2 style="color: dodgerblue">Connect to the container</h2>
@@ -136,6 +228,7 @@
                     get a  #should return b
                 </code></pre>
             </section>
+
             <section>
                 <h2 style="color: dodgerblue">Port forwarding</h2>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
@@ -144,9 +237,9 @@
                 </code></pre>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
                     # install the redis command line client
-                    docker run --name my-redis -d -p 6379:6379 redis
+                    docker run --name my-redis -d -p 9999:6379 redis
                     # connect and set a key
-                    redis-cli -h localhost -p 6379
+                    redis-cli -h localhost -p 9999
                     set a b
                 </code></pre>
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
@@ -156,10 +249,57 @@
                 <pre class="fragment fade-down bash"><code data-trim data-noescape>
                     # use the host IP address:
                     ip address
-                    docker run --rm -it redis redis-cli -h [host-ip]
+                    docker run --rm -it redis redis-cli -h [host-ip] -p 9999
                     get a  #should return b
                 </code></pre>
             </section>
+
+            <section>
+                <h3 style="color: dodgerblue">Mapping an external directory inside</h3>
+
+                <p style="font-size: 0.7em;">Mapping a directory from the host inside the container can be done
+                    with a volume. Let's use the <a href="https://hub.docker.com/_/nginx/" target="_blank">
+                        nginx webserver image</a></p>
+
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # lets create a directory with content
+                    mkdir -p /tmp/www  &&  cd /tmp/www
+                    wget https://media.giphy.com/media/8qgPkRRqwkVlC/giphy.gif
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # now serve the /tmp/www content using nginx
+                    docker run --name webserver -v /tmp/www:/usr/share/nginx/html:ro -p 8080:80 -d nginx
+                </code></pre>
+                <p class="fragment">
+                    now visit <a href="http://localhost:8080/giphy.gif" target="_blank">http://localhost:8080/giphy.gif</a>
+                </p>
+            </section>
+
+            <section>
+                <h2 style="color: dodgerblue">Inspecting a container</h2>
+
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # view the logs
+                    docker logs webserver   # or first part of container-id
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # view the stats of your running containers
+                    docker stats
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # inspect the configuration of a container
+                    docker inspect webserver
+                </code></pre>
+                <pre class="fragment bash"><code data-trim data-noescape>
+                    # execute a command in a running container
+                    docker exec -it webserver /bin/bash
+                </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <h1 style="color: dodgerblue">dinner</h1>
+            <img data-src="https://media.giphy.com/media/10xnAw9YM8IYLe/giphy.gif">
         </section>
 
         <section>
@@ -170,7 +310,6 @@
                 <p>See the <a href="https://docs.docker.com/engine/reference/builder/" target="_blank">Dockerfile
                     reference</a>
                     for all the options</p>
-
             </section>
 
             <section>
@@ -228,6 +367,7 @@
 
                 </code></pre>
                 <pre class="fragment bash"><code data-trim data-noescape>
+                    # --rm means to delete the container when it's exited
                     docker run --rm -it my-app
                 </code></pre>
                 <pre class="fragment bash"><code data-trim data-noescape>
@@ -236,62 +376,14 @@
                 </code></pre>
             </section>
 
-        </section>
-
-        <section>
             <section>
-                <h3 style="color: dodgerblue">Mapping an external directory inside</h3>
-
-                <p style="font-size: 0.7em;">Mapping a directory from the host inside the container can be done
-                    with a volume. Let's use the <a href="https://hub.docker.com/_/nginx/" target="_blank">
-                    nginx webserver image</a></p>
-
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # lets create a directory with content
-                    mkdir -p /tmp/www  &&  cd /tmp/www
-                    wget https://media.giphy.com/media/8qgPkRRqwkVlC/giphy.gif
-                </code></pre>
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # now serve the /tmp/www content using nginx
-                    docker run --name webserver -v /tmp/www:/usr/share/nginx/html:ro -p 8080:80 -d nginx
-                </code></pre>
-                <p class="fragment">
-                    now visit http://[ip-address]:8080/giphy.gif
-                </p>
+                <h2 style="color: dodgerblue">Union file system</h2>
+                <a href="https://www.slideshare.net/KeithResar/container-storage-best-practices-in-2017" target="_blank">
+                <img data-src="union-file-system.png">
+                    <br />
+                    src: https://www.slideshare.net/KeithResar/container-storage-best-practices-in-2017
+                </a>
             </section>
-
-            <section>
-                <h2 style="color: dodgerblue">Inspecting a container</h2>
-
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # view the logs
-                    docker logs webserver   # or first part of container-id
-                </code></pre>
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # view the stats of your running containers
-                    docker stats
-                </code></pre>
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # inspect the configuration of a container
-                    docker inspect webserver
-                </code></pre>
-                <pre class="fragment bash"><code data-trim data-noescape>
-                    # execute a command in a running container
-                    docker exec -it webserver /bin/bash
-                </code></pre>
-            </section>
-        </section>
-
-        <section>
-            <img data-src="https://docs.docker.com/engine/images/architecture.svg">
-            <a href="https://docs.docker.com/engine/docker-overview/" target="_blank">
-                source: docker.com
-            </a>
-        </section>
-
-        <section>
-            <h1 style="color: dodgerblue">dinner</h1>
-            <img data-src="https://media.giphy.com/media/10xnAw9YM8IYLe/giphy.gif">
         </section>
 
         <section>
@@ -330,7 +422,7 @@
 
         <section>
             <section>
-                <h1 style="color: dodgerblue">Experiences<br />at DHL</h1>
+                <h1 style="color: dodgerblue">Experiences<br/>at DHL</h1>
             </section>
             <section>
                 <h3 style="color: dodgerblue">Stopped using application servers</h3>
@@ -355,25 +447,6 @@
             </section>
 
             <section>
-                <h4 style="color: dodgerblue">Don't strive for 100% unit test coverage</h4>
-
-                <ul>
-                    <li>Focus on confidence</li>
-                    <li>More integration & system tests</li>
-                </ul>
-            </section>
-
-            <section>
-                <h3 style="color: dodgerblue">Use structured logging</h3>
-
-                <ul>
-                    <li>Each log entry consists of key-value pairs</li>
-                    <li>Outputs JSON (can be text in dev mode)</li>
-                    <li>Can be ingested by tools like ELK/Graylog etc.</li>
-                </ul>
-            </section>
-
-            <section>
                 <h3 style="color: dodgerblue">Provide a /version endpoint</h3>
 
                 <ul>
@@ -394,7 +467,7 @@
                     <li>Spot anomalies</li>
                     <li>Opens the door for monitoring & altering</li>
                     <li>Started with <a href="https://github.com/toefel18/patan" target="_blank">patan</a></li>
-                    <li>Migrating to <a href="https://prometheus.io/">prometheus</a> </li>
+                    <li>Migrating to <a href="https://prometheus.io/">prometheus</a></li>
                 </ul>
             </section>
 
@@ -410,7 +483,9 @@
                 <p>As of java 8u131 you can use</p>
                 <pre class="bash"><code data-trim data-noescape>-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap</code></pre>
 
-                <p>see <a href="https://blogs.oracle.com/java-platform-group/java-se-support-for-docker-cpu-and-memory-limits">Java SE support for docker limits</a></p>
+                <p>see <a
+                        href="https://blogs.oracle.com/java-platform-group/java-se-support-for-docker-cpu-and-memory-limits">Java
+                    SE support for docker limits</a></p>
             </section>
 
             <section>
@@ -418,36 +493,21 @@
 
                 <ul>
                     <li>Application migrates database at startup</li>
-                    <li>We use <a href="https://flywaydb.org/">Flyway</a> and <a href="https://github.com/sindicate/solidbase" target="_blank">Solidbase</a></li>
-                    <li>Easy to create yourself, <a href="https://github.com/toefel18/garsson-api/blob/master/garsson/db/migration/migrate.go" target="_blank">example go implementation</a></li>
+                    <li>We use <a href="https://flywaydb.org/">Flyway</a> and <a
+                            href="https://github.com/sindicate/solidbase" target="_blank">Solidbase</a></li>
+                    <li>Easy to create yourself, <a
+                            href="https://github.com/toefel18/garsson-api/blob/master/garsson/db/migration/migrate.go"
+                            target="_blank">example go implementation</a></li>
                     <li>Be careful when removing data!</li>
                 </ul>
             </section>
 
             <section>
-                <h4 style="color: dodgerblue">Version REST API</h4>
+                <h4 style="color: dodgerblue">Use environment vars</h4>
 
                 <ul>
-                    <li>URL based: /v1, /2</li>
-                    <li>HTTP Request header based</li>
-                </ul>
-            </section><pre class="bash"><code data-trim data-noescape>X-Api-Version: 1</code></pre>
-
-            <section>
-                <h4 style="color: dodgerblue">Ignore unknown fields while parsing JSON</h4>
-
-                <ul>
-                    <li>Allows you to add fields without breaking consumers</li>
-                    <li>Only requires new API version on breaking changes</li>
-                </ul>
-            </section>
-
-            <section>
-                <h4 style="color: dodgerblue">Document REST API's via swagger, messaging API's via sJSONschema</h4>
-
-                <ul>
-                    <li>API docs live closer to code</li>
-                    <li>Client code generation</li>
+                    <li>They are safer than command line arguments</li>
+                    <li>Supported by all platforms</li>
                 </ul>
             </section>
 
